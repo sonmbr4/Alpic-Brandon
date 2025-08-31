@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ALQUIPC - Sistema de Facturación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link id="app-style" rel="stylesheet" href="./assets/CSS/style.css">
+</head>
+<body class="min-h-screen">
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-laptop text-indigo-600 text-3xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800">ALQUIPC</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="javascript:void(0)" class="text-gray-600 hover:text-indigo-600" id="nav-home">Inicio</a></li>
+                    <li><a href="javascript:void(0)" class="text-gray-600 hover:text-indigo-600" id="nav-history">Historial</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Vista principal del formulario -->
+            <div id="main-view" class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Generación de Factura</h2>
+                
+                <form id="invoice-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="equipments" class="block text-sm font-medium text-gray-700 mb-1">Número de equipos (mínimo 2)</label>
+                            <input type="number" id="equipments" name="equipments" min="2" class="form-control w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" required>
+                        </div>
+                        <div>
+                            <label for="days" class="block text-sm font-medium text-gray-700 mb-1">Días iniciales de alquiler</label>
+                            <input type="number" id="days" name="days" min="1" class="form-control w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Opción de alquiler</label>
+                        <select id="location" name="location" class="form-control w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" required>
+                            <option value="" selected disabled>Seleccione una opción</option>
+                            <option value="city">Dentro de la ciudad</option>
+                            <option value="outside">Fuera de la ciudad</option>
+                            <option value="instore">Dentro del establecimiento</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="additional-days" class="block text-sm font-medium text-gray-700 mb-1">Días adicionales</label>
+                        <input type="number" id="additional-days" name="additional_days" min="0" class="form-control w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="0">
+                    </div>
+
+                    <div class="flex justify-center pt-4">
+                        <button type="submit" class="btn-primary w-full md:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Calcular Factura
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Vista de resultado de factura (inicialmente oculta) -->
+            <div id="result-view" class="bg-white rounded-lg shadow-md p-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">Resumen de Factura</h2>
+                    <span class="text-sm bg-indigo-100 text-indigo-800 py-1 px-3 rounded-full">Factura #<span id="invoice-id"></span></span>
+                </div>
+
+                <div class="border-t border-b border-gray-200 py-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">ID Cliente</p>
+                            <p id="client-id" class="font-medium"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Opción de Alquiler</p>
+                            <p id="rental-option" class="font-medium"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Equipos Alquilados</p>
+                            <p id="equipment-count" class="font-medium"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Días Iniciales</p>
+                            <p id="initial-days" class="font-medium"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Días Adicionales</p>
+                            <p id="extra-days" class="font-medium"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2 mb-6">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Costo base</span>
+                        <span id="base-cost" class="font-medium"></span>
+                    </div>
+                    <div id="discount-section" class="flex justify-between text-green-600">
+                        <span>Descuento</span>
+                        <span id="discount"></span>
+                    </div>
+                    <div id="surcharge-section" class="flex justify-between text-red-600">
+                        <span>Recargo</span>
+                        <span id="surcharge"></span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
+                        <span>Total a pagar</span>
+                        <span id="total-amount"></span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4">
+                    <button id="copy-summary" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-md font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        <i class="far fa-copy mr-2"></i> Copiar resumen para email
+                    </button>
+                    <button id="new-invoice" class="px-4 py-2 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-plus mr-2"></i> Nueva factura
+                    </button>
+                </div>
+            </div>
+
+            <!-- Vista de historial (inicialmente oculta) -->
+            <div id="history-view" class="bg-white rounded-lg shadow-md p-6 hidden">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Historial de Facturas</h2>
+                
+                <div id="history-list" class="space-y-4">
+                    <!-- El historial de facturas se cargará dinámicamente aquí -->
+                </div>
+                
+                <div id="empty-history" class="text-center py-8">
+                    <i class="fas fa-history text-gray-300 text-5xl mb-3"></i>
+                    <p class="text-gray-500">No hay facturas en el historial</p>
+                </div>
+                
+                <div class="mt-6 text-center">
+                    <button id="back-to-form" class="px-4 py-2 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 focus:outline-none">
+                        Volver al formulario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-5 rounded-lg flex flex-col items-center">
+            <div class="loader h-12 w-12 rounded-full border-4 border-gray-300"></div>
+            <p class="mt-3 text-gray-700">Procesando factura...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast bg-green-500 text-white"></div>
+
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <i class="fas fa-laptop text-indigo-400 text-xl mr-2"></i>
+                        <span class="font-bold text-lg">ALQUIPC</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mt-1">Sistema de facturación para alquiler de equipos</p>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">&copy; 2025 ALQUIPC. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script id="app-script" src="./assets/JS/main.js"></script>
+</body>
+</html>
